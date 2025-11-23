@@ -76,16 +76,55 @@ endif()
 set(FOXGLOVE_SDK_ROOT "${FOXGLOVE_SDK_EXTRACT_DIR}/foxglove")
 set(FOXGLOVE_SDK_INCLUDE_DIR "${FOXGLOVE_SDK_ROOT}/include")
 set(FOXGLOVE_SDK_LIBRARY "${FOXGLOVE_SDK_ROOT}/lib/libfoxglove.a")
+set(FOXGLOVE_SDK_SHARED_LIBRARY "${FOXGLOVE_SDK_ROOT}/lib/libfoxglove.so")
 
 if(NOT EXISTS "${FOXGLOVE_SDK_LIBRARY}")
   message(FATAL_ERROR
     "Foxglove SDK archive did not provide the expected library at ${FOXGLOVE_SDK_LIBRARY}")
 endif()
 
+set(FOXGLOVE_SDK_CPP_SRC_DIR "${FOXGLOVE_SDK_ROOT}/src")
+set(FOXGLOVE_SDK_WRAPPER_SOURCES
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/channel.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/cloud_sink.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/context.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/error.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/foxglove.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/mcap.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/schemas.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/connection_graph.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/fetch_asset.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/parameter.cpp"
+  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/service.cpp"
+)
+
+add_library(foxglove_sdk_vendor_cpp SHARED ${FOXGLOVE_SDK_WRAPPER_SOURCES})
+target_compile_features(foxglove_sdk_vendor_cpp PUBLIC cxx_std_17)
+target_include_directories(foxglove_sdk_vendor_cpp
+  PUBLIC
+    $<BUILD_INTERFACE:${FOXGLOVE_SDK_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(foxglove_sdk_vendor_cpp
+  PRIVATE
+    ${FOXGLOVE_SDK_LIBRARY}
+)
+
 install(DIRECTORY "${FOXGLOVE_SDK_INCLUDE_DIR}/"
   DESTINATION include)
 install(FILES "${FOXGLOVE_SDK_LIBRARY}"
   DESTINATION lib)
+if(EXISTS "${FOXGLOVE_SDK_SHARED_LIBRARY}")
+  install(FILES "${FOXGLOVE_SDK_SHARED_LIBRARY}"
+    DESTINATION lib)
+endif()
+install(TARGETS foxglove_sdk_vendor_cpp
+  EXPORT foxglove_sdk_vendorTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin)
 ament_export_include_directories(include)
+ament_export_targets(foxglove_sdk_vendorTargets HAS_LIBRARY_TARGET)
 
 ament_package(CONFIG_EXTRAS "foxglove_sdk_vendor-extras.cmake")

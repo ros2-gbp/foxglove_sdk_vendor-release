@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>foxglove_sdk_vendor</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>
     Vendor package that fetches prebuilt Foxglove SDK archives and exposes the headers
     and libfoxglove.a static library to ROS 2 workspaces.

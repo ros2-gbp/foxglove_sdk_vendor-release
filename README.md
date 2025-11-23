@@ -1,14 +1,16 @@
 # foxglove_sdk_vendor
 
 ROS 2 vendor package that downloads the prebuilt [Foxglove SDK](https://docs.foxglove.dev/docs/sdk)
-release artifacts and installs the headers plus `libfoxglove.a` static library into the workspace.
-It follows the upstream installation guidance that recommends fetching the appropriate archive for
-your target platform and linking the C++ wrapper in your own build.
+release artifacts, installs the public headers, and builds a shared library that contains the SDK's
+C++ wrapper sources linked against the bundled `libfoxglove.a`. Downstream packages only need to
+link against the exported `foxglove_sdk_vendor::foxglove_sdk` target to obtain both the wrapper code
+and the underlying SDK runtime.
 
 Currently the package pulls Foxglove SDK `v0.15.1` for Linux hosts (`x86_64` or `aarch64`). The
-archive is vendored under `vendor/` (see below) and verified via the SHA256 value published on the
+archive is vendored under `vendor/` (see below), verified via the SHA256 value published on the
 [GitHub release page](https://github.com/foxglove/foxglove-sdk/releases?q=sdk%2F&expanded=true), and
-extracted into the build tree before being installed to `install/`.
+extracted into the build tree before the headers, `libfoxglove.a`, `libfoxglove.so` (if provided),
+and the compiled wrapper library are installed to `install/`.
 
 ## Using the vendor package
 
@@ -16,9 +18,7 @@ extracted into the build tree before being installed to `install/`.
 find_package(foxglove_sdk_vendor REQUIRED)
 
 add_executable(example_node src/example_node.cpp)
-target_link_libraries(example_node
-  PRIVATE foxglove_sdk_vendor::foxglove_sdk
-)
+target_link_libraries(example_node PRIVATE foxglove_sdk_vendor::foxglove_sdk)
 ```
 
 The config exported by `ament_package()` also sets
@@ -30,7 +30,8 @@ directly if you prefer.
 1. Pick the desired SDK release from the [Foxglove SDK docs](https://docs.foxglove.dev/docs/sdk) or
    the GitHub releases page.
 2. Update `FOXGLOVE_SDK_VERSION`, URLs, and SHA256 values in `CMakeLists.txt`.
-3. Rebuild the workspace so the new archive is downloaded and installed.
+3. Verify the list of wrapper sources (`FOXGLOVE_SDK_WRAPPER_SOURCES`) matches the new release.
+4. Rebuild the workspace so the new archive is downloaded, compiled, and installed.
 
 If you need support for an additional platform, extend the processor detection logic in
 `CMakeLists.txt` with the new archive name and checksum.
