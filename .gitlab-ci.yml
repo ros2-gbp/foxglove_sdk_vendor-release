@@ -1,0 +1,52 @@
+stages:
+  - build_and_test
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+.base_job:
+  stage: build_and_test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "schedule"'
+  before_script:
+    - mkdir -p /ros_ws/src
+    - cp -r $CI_PROJECT_DIR /ros_ws/src/foxglove_sdk_vendor
+    - cd /ros_ws
+    - apt-get update
+    - rosdep update
+  script:
+    - colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+  artifacts:
+    when: always
+    paths:
+      - log/
+      - test_results/
+    reports:
+      junit: test_results/**/*.xml
+    expire_in: 1 week
+
+build_and_test_jazzy:
+  extends: .base_job
+  image: ros:jazzy
+  before_script:
+    - mkdir -p /ros_ws/src
+    - cp -r $CI_PROJECT_DIR /ros_ws/src/foxglove_sdk_vendor
+    - cd /ros_ws
+    - source /opt/ros/jazzy/setup.bash
+    - apt-get update
+    - rosdep update
+    - rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
+
+build_and_test_rolling:
+  extends: .base_job
+  image: ros:rolling
+  before_script:
+    - mkdir -p /ros_ws/src
+    - cp -r $CI_PROJECT_DIR /ros_ws/src/foxglove_sdk_vendor
+    - cd /ros_ws
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+    - rosdep update
+    - rosdep install --from-paths src --ignore-src -y --rosdistro rolling
