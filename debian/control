@@ -1,0 +1,12 @@
+Source: ros-rolling-foxglove-sdk-vendor
+Section: misc
+Priority: optional
+Maintainer: Jordan Lack <jlack1987@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ros-workspace
+Homepage: https://docs.foxglove.dev/docs/sdk
+Standards-Version: 3.9.2
+
+Package: ros-rolling-foxglove-sdk-vendor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-ros-workspace
+Description: Vendor package that fetches prebuilt Foxglove SDK archives and exposes the headers and libfoxglove.a static library to ROS 2 workspaces.
