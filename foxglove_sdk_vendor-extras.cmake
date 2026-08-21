@@ -12,6 +12,7 @@ if(NOT TARGET foxglove_sdk_vendor::foxglove_sdk)
   add_library(foxglove_sdk_vendor::foxglove_sdk SHARED IMPORTED)
   set_target_properties(foxglove_sdk_vendor::foxglove_sdk PROPERTIES
     IMPORTED_LOCATION "${_foxglove_sdk_vendor_library}"
+    INTERFACE_COMPILE_FEATURES cxx_std_17
     INTERFACE_INCLUDE_DIRECTORIES "${_foxglove_sdk_vendor_include}"
   )
 endif()
