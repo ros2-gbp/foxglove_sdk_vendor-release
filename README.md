@@ -6,11 +6,15 @@ C++ wrapper sources linked against the bundled `libfoxglove.a`. Downstream packa
 link against the exported `foxglove_sdk_vendor::foxglove_sdk` target to obtain both the wrapper code
 and the underlying SDK runtime.
 
-Currently the package pulls Foxglove SDK `v0.15.1` for Linux hosts (`x86_64` or `aarch64`). The
+Currently the package pulls Foxglove SDK `v0.26.0` for Linux hosts (`x86_64` or `aarch64`). The
 archive is vendored under `vendor/` (see below), verified via the SHA256 value published on the
 [GitHub release page](https://github.com/foxglove/foxglove-sdk/releases?q=sdk%2F&expanded=true), and
 extracted into the build tree before the headers, `libfoxglove.a`, `libfoxglove.so` (if provided),
 and the compiled wrapper library are installed to `install/`.
+
+The exported wrapper uses the SDK's non-Remote-Access static core, preserving the behavior of
+earlier releases of this package. The prebuilt `libfoxglove.so` is still installed, but Remote
+Access is not enabled on the `foxglove_sdk_vendor::foxglove_sdk` target.
 
 ## Using the vendor package
 
@@ -30,8 +34,11 @@ directly if you prefer.
 1. Pick the desired SDK release from the [Foxglove SDK docs](https://docs.foxglove.dev/docs/sdk) or
    the GitHub releases page.
 2. Update `FOXGLOVE_SDK_VERSION`, URLs, and SHA256 values in `CMakeLists.txt`.
-3. Verify the list of wrapper sources (`FOXGLOVE_SDK_WRAPPER_SOURCES`) matches the new release.
-4. Rebuild the workspace so the new archive is downloaded, compiled, and installed.
+3. Verify that the release archive still provides its CMake package config and
+   `foxglove_sdk_add_cpp_library()` helper.
+4. Clean-rebuild the vendor package and its consumers so the new archive is extracted, compiled,
+   and installed. A normal incremental build can retain object files built against the previous
+   SDK ABI when release-archive timestamps are older than the build tree.
 
 If you need support for an additional platform, extend the processor detection logic in
 `CMakeLists.txt` with the new archive name and checksum.
