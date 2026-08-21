@@ -1,3 +1,26 @@
+## foxglove_sdk_vendor (rolling) - 0.3.0-1
+
+The packages in the `foxglove_sdk_vendor` repository were released into the `rolling` distro by running `/home/jlack/.local/bin/bloom-release --rosdistro rolling --track rolling foxglove_sdk_vendor` on `Fri, 21 Aug 2026 19:10:17 -0000`
+
+The `foxglove_sdk_vendor` package was released.
+
+Version of package(s) in repository `foxglove_sdk_vendor`:
+
+- upstream repository: https://gitlab.com/jlack/foxglove_sdk_vendor.git
+- release repository: https://github.com/ros2-gbp/foxglove_sdk_vendor-release.git
+- rosdistro version: `0.2.0-3`
+- old version: `0.2.0-3`
+- new version: `0.3.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.3`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.26.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## foxglove_sdk_vendor (lyrical) - 0.3.0-1
 
 The packages in the `foxglove_sdk_vendor` repository were released into the `lyrical` distro by running `/home/jlack/.local/bin/bloom-release --rosdistro lyrical --track lyrical foxglove_sdk_vendor` on `Fri, 21 Aug 2026 19:03:36 -0000`
