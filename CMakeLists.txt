@@ -3,7 +3,7 @@ project(foxglove_sdk_vendor LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
 
-set(FOXGLOVE_SDK_VERSION "v0.15.1")
+set(FOXGLOVE_SDK_VERSION "v0.26.0")
 option(FOXGLOVE_SDK_VENDOR_ALLOW_DOWNLOAD "Allow downloading the Foxglove SDK archive when not vendored" ON)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -12,10 +12,10 @@ endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64)$")
   set(FOXGLOVE_SDK_PLATFORM "x86_64-unknown-linux-gnu")
-  set(FOXGLOVE_SDK_SHA256 "0439114f3804a4cff7902558dd249aafb9e4c231aaf42ec227bf767132c707a4")
+  set(FOXGLOVE_SDK_SHA256 "8fb03b061127788ad708918d186d74d4fdb58718b11cff97c9d605513ab57cc6")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
   set(FOXGLOVE_SDK_PLATFORM "aarch64-unknown-linux-gnu")
-  set(FOXGLOVE_SDK_SHA256 "6ce7129d7b551a22483bf8a759b2f2da5e59357327c93d1ccc00cfb8be886822")
+  set(FOXGLOVE_SDK_SHA256 "0710f2ec5abc3954acf6203b93a96768dccd19d742af9b78fcd8fbbba5f6225a")
 else()
   message(FATAL_ERROR
     "foxglove_sdk_vendor provides prebuilt binaries only for x86_64 and aarch64 on Linux. "
@@ -83,32 +83,26 @@ if(NOT EXISTS "${FOXGLOVE_SDK_LIBRARY}")
     "Foxglove SDK archive did not provide the expected library at ${FOXGLOVE_SDK_LIBRARY}")
 endif()
 
-set(FOXGLOVE_SDK_CPP_SRC_DIR "${FOXGLOVE_SDK_ROOT}/src")
-set(FOXGLOVE_SDK_WRAPPER_SOURCES
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/channel.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/cloud_sink.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/context.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/error.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/foxglove.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/mcap.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/schemas.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/connection_graph.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/fetch_asset.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/parameter.cpp"
-  "${FOXGLOVE_SDK_CPP_SRC_DIR}/server/service.cpp"
-)
+find_package(foxglove-sdk CONFIG REQUIRED
+  PATHS "${FOXGLOVE_SDK_ROOT}"
+  NO_DEFAULT_PATH)
 
-add_library(foxglove_sdk_vendor_cpp SHARED ${FOXGLOVE_SDK_WRAPPER_SOURCES})
+# Use the source list and platform link dependencies supplied by the SDK archive.
+# REMOTE_ACCESS is kept off to preserve the vendor package's existing static-core
+# behavior and avoid imposing the remote-access library's glibc baseline on users.
+foxglove_sdk_add_cpp_library(foxglove_sdk_vendor_cpp
+  TYPE SHARED
+  REMOTE_ACCESS OFF)
 target_compile_features(foxglove_sdk_vendor_cpp PUBLIC cxx_std_17)
-target_include_directories(foxglove_sdk_vendor_cpp
-  PUBLIC
-    $<BUILD_INTERFACE:${FOXGLOVE_SDK_INCLUDE_DIR}>
-    $<INSTALL_INTERFACE:include>
-)
-target_link_libraries(foxglove_sdk_vendor_cpp
-  PRIVATE
-    ${FOXGLOVE_SDK_LIBRARY}
+
+# The upstream helper points its public interface at the extracted build tree.
+# Replace that interface before exporting the target so installed consumers use
+# the headers installed by this package instead.
+set_target_properties(foxglove_sdk_vendor_cpp PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES
+    "$<BUILD_INTERFACE:${FOXGLOVE_SDK_INCLUDE_DIR}>;$<INSTALL_INTERFACE:include>"
+  INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+    "$<BUILD_INTERFACE:${FOXGLOVE_SDK_INCLUDE_DIR}>;$<INSTALL_INTERFACE:include>"
 )
 
 install(DIRECTORY "${FOXGLOVE_SDK_INCLUDE_DIR}/"
